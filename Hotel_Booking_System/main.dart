@@ -1,104 +1,38 @@
-class Hotel {
-  String name;
-  List<Room> rooms = [];
-  Hotel(this.name);
-  
-  void addRoom(Room room) {
-    rooms.add(room);
-  }
-
-  void showAvailableRooms() {
-    print("Available Rooms: ");
-    for (var room in rooms) {
-      if (room.isAvailable) {
-        print("Room ${room.roomNumber} - Price: ${room.price}");
-      }
-    }
-  }
-}
-
-class Room {
-  int roomNumber;
-  double price;
-  bool isAvailable;
-  
-  Room(this.roomNumber, this.price, {this.isAvailable = true});
-  
-  void bookRoom() {
-    if (isAvailable) {
-      isAvailable = false;
-      print("Room $roomNumber has been booked.");
-    } else {
-      print("Room $roomNumber is already booked.");
-    }
-  }
-
-  void cancelBooking() {
-    isAvailable = true;
-    print("Booking for Room $roomNumber has been canceled.");
-  }
-}
-
-class User {
-  String name;
-  List<Booking> bookings = []; 
-
-  User(this.name);
-
-  void makeBooking(Room room) {
-    if (room.isAvailable) {
-      Booking booking = Booking(user: this, room: room);
-      bookings.add(booking);
-      room.bookRoom();
-      print("$name booked Room ${room.roomNumber}.");
-    } else {
-      print("Room ${room.roomNumber} is not available.");
-    }
-  }
-
-  void cancelBooking(Booking booking) {
-    if (bookings.contains(booking)) {
-      booking.cancelBooking();
-      bookings.remove(booking);
-      print("$name canceled booking for Room ${booking.room.roomNumber}.");
-    }
-  }
-}
-
-class Booking {
-  User user;
-  Room room;
-  DateTime bookingDate;
-
-  Booking({required this.user, required this.room}) : bookingDate = DateTime.now();
-
-  void cancelBooking() {
-    room.cancelBooking();
-    print("${user.name} canceled booking for Room ${room.roomNumber}.");
-  }
-}
+import 'hotel.dart';
+import 'room.dart';
+import 'user.dart';
+import 'admin.dart';
+import 'payment.dart';
+import 'review.dart';
 
 void main() {
   Hotel hotel = Hotel("Grand Hotel");
 
-  Room room1 = Room(101, 100);
-  Room room2 = Room(102, 150);
-  Room room3 = Room(103, 200);
-
-  hotel.addRoom(room1);
-  hotel.addRoom(room2);
-  hotel.addRoom(room3);
+  Admin admin = Admin("Manager", hotel);
+  admin.addRoom(Room(101, 100));
+  admin.addRoom(Room(102, 150));
+  admin.addRoom(Room(103, 200));
 
   hotel.showAvailableRooms();
 
-  User user1 = User("Ali");
+  User user1 = User("Ali", "U001");
 
-  user1.makeBooking(room1);
-  user1.makeBooking(room1);
+ 
+  user1.makeBooking(hotel.rooms[0]);
 
-  hotel.showAvailableRooms();
+ 
+  if (user1.bookings.isNotEmpty) {
+    Payment payment = Payment(user: user1, booking: user1.bookings.first);
+    payment.makePayment();
+  }
 
-  user1.cancelBooking(user1.bookings.first);
 
+  Review review = Review(user: user1, comment: "Great hotel with amazing service!", rating: 5);
+  review.showReview();
+
+ 
+  admin.showAllRooms();
+
+  admin.removeRoom(102);
   hotel.showAvailableRooms();
 }
